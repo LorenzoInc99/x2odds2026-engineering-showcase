@@ -1,21 +1,41 @@
 # Security and IP Boundary
 
-This showcase is public-facing and intentionally limited.
+This showcase excludes any information that could compromise the private product.
 
-## Public in this repository
+## Never included
 
-- Sanitized code snippets that demonstrate architecture and engineering approach
-- High-level metrics (endpoint count, migration count)
-- Non-sensitive diagrams and narrative case study
+- `.env` files, tokens, keys, secrets
+- Partner names and affiliate links
+- Full prompts and internal prompt libraries
+- Proprietary formulas or ranking logic
+- Revenue/business-sensitive metrics
+- Sensitive policies or operational credentials
 
-## Private (not shared)
+## Included
 
-- `.env` values, API keys, tokens, and service credentials
-- Proprietary business logic (ranking, monetization, weighting heuristics)
-- Full prompt catalogs and internal policy instructions
-- Partner/customer data and private operational telemetry
-- Full production repository history and release details
+- High-level architecture and engineering choices
+- Sanitized code patterns
+- Tooling and workflow descriptions relevant to hiring evaluation
+# Security and IP boundary
 
-## Disclosure statement
+This repository is **public** and **documentation-first**.
 
-If requested during interviews, deeper technical walkthroughs can be provided live (screen share) without sharing protected source code or secrets.
+## Never included
+
+- Passwords, API keys, tokens, `.env` files  
+- Full system prompts or internal prompt libraries  
+- Proprietary **formulas**, ranking weights, or monetization logic  
+- **Partner** names, affiliate links, or commercial terms  
+- **RLS policies**, exact Supabase project refs, or service-role material  
+- User PII or production exports  
+
+## Included
+
+- High-level architecture and data-flow descriptions  
+- Sanitized code **patterns** under `samples/` (not a runnable clone of the full app)  
+- Honest stack names (e.g. Next.js, PostgreSQL/Supabase, Sport API, LLM providers) without exposing credentials  
+
+## Reviewer expectation
+
+Readers should **not** be able to clone a working business system from this repo alone.  
+They **should** be able to understand how you think about **pipelines, data grounding, and AI operations**.

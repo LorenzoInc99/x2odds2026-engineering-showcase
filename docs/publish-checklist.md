@@ -1,25 +1,19 @@
-# Publish Checklist (Before Making Repo Public)
+# Publish Checklist
 
-## 1) Secrets and sensitive text
-- Search for: `API_KEY`, `SECRET`, `TOKEN`, `PASSWORD`, `SUPABASE_SERVICE_ROLE_KEY`
-- Verify no `.env` files are present
-- Ensure URLs do not contain embedded credentials
+- [ ] No `.env` or key material
+- [ ] No partner/affiliate names or links
+- [ ] No full prompt files from private repo
+- [ ] No proprietary formulas/ranking logic
+- [ ] No earnings/business-sensitive metrics
+- [ ] Only high-level docs and sanitized samples
+- [ ] Final repo contains only `README.md`, `docs/`, `samples/`
+# Pre-publish checklist (before pushing to GitHub)
 
-## 2) Data privacy
-- Remove any customer/user identifiers
-- Remove private partner names if under NDA
-- Keep screenshots free of sensitive values
+- [ ] No `.env`, keys, or URLs with embedded credentials  
+- [ ] No full prompts copied from production  
+- [ ] No partner names, affiliate links, or revenue hints  
+- [ ] No RLS policy SQL or Supabase dashboard screenshots with sensitive IDs  
+- [ ] `samples/` contain only sanitized patterns  
+- [ ] README states that the repo is **documentation-first**, not a full runnable product  
 
-## 3) IP protection
-- Exclude proprietary scoring/ranking formulas
-- Exclude monetization logic and strategy docs
-- Keep only representative snippets
-
-## 4) Repository hygiene
-- Add `README.md` with clear scope and disclaimer
-- Add `LICENSE` (optional but recommended)
-- Ensure all example code compiles conceptually even if not executable standalone
-
-## 5) Application usage
-- Link this showcase in CV as: "Technical Showcase (sanitized)"
-- Add one line: "Production repository remains private due to commercial IP and security constraints."
+If you add screenshots later: blur user data, keys, and internal URLs.

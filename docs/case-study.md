@@ -1,48 +1,46 @@
-# Case Study: From Feature Delivery to Reliability Engineering
+# Case Study: Building Reliability Around AI Features
 
-## Context
+## Initial challenge
 
-The project started as an AI-enabled analytics product. Early progress was feature-heavy: add endpoints, wire data sources, integrate LLM prompts, and ship quickly.
+A model can produce an answer, but production quality depends on the whole system:
+- data freshness
+- retrieval quality
+- orchestration robustness
+- failure handling
 
-The challenge appeared during real usage: output quality was not only a model issue. Many failures came from data freshness, sync gaps, and edge-case pipeline behavior.
+## What improved over iterations
 
-## What was built
+- moved from model-first responses to DB-grounded context assembly
+- expanded sync/verification scripts to reduce silent regressions
+- introduced clearer operational pathways for debugging and refresh
+- improved intent handling for more reliable downstream generation
 
-### 1) API and delivery surface
-- Backend with `70+` route handlers for ingestion, assistant flows, admin tooling, and monitoring-related utilities.
+## Engineering takeaway
 
-### 2) Data modeling and lifecycle
-- Relational schema evolution through SQL migrations in PostgreSQL/Supabase.
-- Domain tables for fixtures, stats, personalization, and operational state.
+For applied AI products, reliability is a systems engineering problem, not only a prompt problem.
+# Case study: Building a DB-grounded AI analytics product
 
-### 3) Pipeline reliability layer
-- Sync verification and audit-style checks to detect regressions earlier.
-- Operational controls (debug/refresh endpoints) to speed up issue triage.
-- Tiered sync cadence based on upcoming kickoff windows (higher frequency close to event time).
+## Starting point
 
-### 4) LLM integration discipline
-- Structured context assembly before model invocation.
-- JSON-schema-constrained outputs for specific extraction tasks.
-- Prompt constraints to reduce ambiguity in downstream processing.
+The goal was a product where **decisions and answers** are tied to **fresh structured data**, not to free-form model memory. That means investing as much in **pipelines and schema** as in prompts.
 
-## Engineering lesson
+## What changed over time
 
-The major lesson was practical: "AI quality" is often system quality.
+Early iterations focused on “make the assistant respond.” The harder wins came from:
 
-- If data is stale, model answers drift.
-- If context is noisy, model consistency drops.
-- If sync pipelines are brittle, trust in outputs falls quickly.
+1. **Sync reliability** — When the database is wrong or stale, every model looks worse.  
+2. **Context assembly** — Building structured, DB-backed blocks before any generation step.  
+3. **Constrained LLM steps** — JSON-shaped extraction and selection where possible, with conservative fallbacks.  
+4. **Operational hooks** — Routes and state for “what ran last” and debugging, so failures are diagnosable.
 
-This shifted development toward lifecycle-oriented engineering:
+## Local-first development
 
-- monitor -> validate -> gate -> release -> review
+The stack runs in **local development**; a **hosted** deployment is planned. This showcase does not imply a public production URL or traffic metrics.
 
-## Relevance to analytics engineering roles
+## What this demonstrates for an Analytics Engineer profile
 
-This work directly maps to common responsibilities in AI analytics teams:
+- **SQL-first** thinking for analytical and operational tables.  
+- **Pipeline lifecycle** awareness (sync, validation, iteration).  
+- **AI reliability** as a systems problem (data + constraints + review), not only prompt tuning.
 
-- evaluation and structured review loops for generative outputs
-- observability and regression detection in production-like systems
-- SQL-centered analytical data modeling
-- API-based integration and operational ownership
-- collaboration across technical and business contexts
+Full prompts, proprietary logic, and partner-specific material are **out of scope** for public documentation.
