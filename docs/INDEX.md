@@ -4,7 +4,7 @@ Read in order for a full walkthrough, or jump to a topic.
 
 | Doc | Topic |
 |-----|--------|
-| [`00-overview.md`](00-overview.md) | End-to-end system flow: API → DB → AI → UI |
+| [`00-overview.md`](00-overview.md) | **Full process:** Sport API ↔ DB ↔ AI ↔ UI ↔ User (ASCII + Mermaid) |
 | [`01-sport-api-and-sync.md`](01-sport-api-and-sync.md) | Ingestion, sync windows, reliability patterns |
 | [`02-database.md`](02-database.md) | PostgreSQL/Supabase modeling, migrations, boundaries |
 | [`03-ai-layer.md`](03-ai-layer.md) | LLM orchestration, DB grounding, constraints |

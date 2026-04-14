@@ -1,56 +1,65 @@
 # X2ODDS2026 Engineering Showcase
 
-Public, **documentation-first** portfolio for hiring review: **Sport API → PostgreSQL (Supabase) → LLM orchestration → Next.js UI**.
+End-to-end process (what this project implements at a high level):
 
-**What this is:** architecture, patterns, and engineering judgment.  
-**What this is not:** a runnable clone, `.env`, secrets, full prompts, partners, or proprietary business logic.
+```
+                    ┌─────────────┐
+                    │    User     │
+                    └──────┬──────┘
+                           │ questions, clicks
+                           ▼
+┌──────────┐    ┌──────────────────┐    ┌─────────────┐    ┌──────────┐
+│ Sport    │◀──▶│   Database       │◀──▶│     AI      │◀──▶│   User   │
+│ API      │    │ (PostgreSQL /    │    │ (LLM +      │    │ Interface│
+│ (REST)   │    │  Supabase)       │    │  orchestr.) │    │ (Next.js)│
+└──────────┘    └──────────────────┘    └─────────────┘    └────┬─────┘
+      │                   │                    │                 │
+      │ sync / refresh    │ read / write       │ context in      │ HTML/JSON
+      │                   │ context            │ generation      │ responses
+      └───────────────────┴────────────────────┴─────────────────┘
+```
+
+**How to read it**
+
+- **Sport API ↔ Database:** scheduled and on-demand jobs pull **external sports data** and **upsert** into your tables (fixtures, odds, stats context, etc.). The DB is the **internal source of truth** for the app.
+- **Database ↔ AI:** before answering, the backend **loads structured rows** from the DB and builds **context blocks** for the model. The LLM is **not** asked to invent facts that exist in your data.
+- **AI ↔ User Interface:** the UI calls **your** API routes; those routes run the orchestration (intent → DB → LLM → response). **Secrets and providers stay on the server.**
+- **User Interface ↔ User:** the user sees pages, chat, and controls; they interact with **React** and the same **HTTP API** surface.
+
+**What this repo contains:** documentation and sanitized samples only — not the full runnable app, `.env`, or proprietary prompts.
 
 ---
 
-## Start here (2-minute path)
+## Quick links
 
-| Read first | What you get |
-|------------|----------------|
-| **[`docs/INDEX.md`](docs/INDEX.md)** | Full table of contents + links to every doc |
-| **[`docs/00-overview.md`](docs/00-overview.md)** | Pipeline diagram + request flow |
-| **[`docs/05-transferable-skills.md`](docs/05-transferable-skills.md)** | Skill map for analytics / applied AI roles |
-| **[`docs/03-ai-layer.md`](docs/03-ai-layer.md)** | DB-grounded LLM orchestration |
-| **`samples/`** | Sanitized TypeScript/SQL patterns |
+| Doc | Content |
+|-----|---------|
+| **[`docs/00-overview.md`](docs/00-overview.md)** | **Full process diagram** (including User) + request sequence |
+| [`docs/INDEX.md`](docs/INDEX.md) | Table of contents for all docs |
+| [`docs/03-ai-layer.md`](docs/03-ai-layer.md) | LLM + database grounding |
+| [`samples/`](samples/) | Sanitized code patterns |
 
 ---
 
 ## What this demonstrates
 
-- **Data ingestion:** REST Sport API → sync jobs → normalized PostgreSQL
-- **Data engineering:** SQL migrations, operational tables, analytical shape
-- **AI / analytics engineering:** structured context, constraints, server-side orchestration
-- **Product engineering:** ~77 Next.js API route handlers, React UI on the same stack
-- **Reliability mindset:** cadence, validation checks, operational state (high level only)
+- **Ingestion:** Sport API → sync → PostgreSQL
+- **Data engineering:** migrations, operational tables
+- **AI engineering:** DB-grounded orchestration, constraints
+- **Product:** Next.js API routes + React UI (~77 route handlers in the main project branch)
 
-## Stack (transferable)
+## Stack
 
-TypeScript · Next.js (App Router) · React · PostgreSQL / Supabase · REST · LLM API (`@google/genai`) · migration-led schema evolution
+TypeScript · Next.js · React · PostgreSQL/Supabase · REST · LLM API (`@google/genai`)
 
-## Scope (non-sensitive, order of magnitude)
+## Scope (order of magnitude)
 
-- **~77** HTTP API route handlers in the main application branch  
-- **~20** SQL migration files in the current branch context  
-- Local-first development; deployment planned separately  
-
-## Repository layout
-
-```
-README.md          ← you are here
-docs/              ← deep-dive: INDEX + pipeline, DB, AI, UI, skills map, security, case study
-samples/           ← sanitized code patterns only
-```
-
-See **[`docs/INDEX.md`](docs/INDEX.md)** for the full list.
+~77 API route handlers · ~20 SQL migration files · local-first
 
 ## Author
 
-Solo engineering ownership: backend/API, data layer, AI integration, and UI wiring (as described in this repo).
+Solo engineering ownership of backend/API, data layer, AI integration, and UI wiring.
 
 ## Use
 
-For professional review (recruiting, interviews). `samples/` are illustrative patterns, not drop-in production code.
+Professional review (recruiting, interviews). `samples/` are illustrative, not production drop-ins.

@@ -1,52 +1,90 @@
-# Overview: Sport API -> Database -> AI -> UI
+# Overview: Sport API ↔ Database ↔ AI ↔ User Interface ↔ User
 
-## Diagram (logical)
+This page is the **single picture** of the system: two flows — **data** (keeping the DB fresh) and **interactive** (user asks, system answers using the DB + AI).
+
+---
+
+## 1) The full loop (conceptual)
+
+```
+  Sport API          Database           AI              User Interface        User
+ (external)      (PostgreSQL/Supabase)  (LLM + logic)      (Next.js / React)
+      │                  │                │                      │                │
+      │◀──── sync ──────▶│◀── context ───▶│◀── orchestration ───▶│◀── browse / ask ───▶│
+      │      jobs        │    reads       │    server-side       │    HTTP/JSON      │
+      │                  │                │                      │                │
+      │                  │                │                      │──── responses ───┘
+      │                  │                │                      │
+      └──────────────────┴────────────────┴──────────────────────┘
+```
+
+- **Sport API ↔ Database:** pull data in, normalize, store. **Bidirectional** in the sense that sync runs repeatedly; the DB is updated as the API’s view of the world changes.
+- **Database ↔ AI:** the model step **reads** from the DB (and optionally joins multiple tables) to build **grounded** context; nothing here replaces your DB with “model memory” for factual domains.
+- **AI ↔ User Interface:** the UI does **not** call the LLM vendor directly. It calls **your** backend routes, which orchestrate DB + LLM and return text/JSON to the UI.
+- **User Interface ↔ User:** the user only sees the product shell and responses; **no** raw API keys or internal prompts in the browser.
+
+---
+
+## 2) Data plane (background): keeping the database fresh
 
 ```mermaid
 flowchart LR
-  A[Sport API REST] --> B[Sync and cron jobs]
-  B --> C[(PostgreSQL / Supabase)]
-  C --> D[Next.js route handlers]
-  D --> E[React UI]
-  C --> F[Context assembly]
-  F --> G[LLM API]
-  G --> D
-  D --> H[Admin / debug / ops routes]
+  S[Sport API] -->|REST fetch| J[Sync / cron jobs]
+  J -->|upsert| DB[(PostgreSQL)]
+  J -->|run metadata| DB
 ```
 
-## System flow
+- Runs on a **schedule** or **admin-triggered** paths (not per user click for bulk data).
+- Goal: **stale data** is detected and fixed via **operations**, not by asking the model to guess.
 
-1. **Sport API ingestion**
-   - External data is fetched in controlled windows.
-   - Sync jobs write normalized records into PostgreSQL/Supabase.
+---
 
-2. **Database as operational truth**
-   - The app reads primarily from internal tables.
-   - Data lifecycle is managed through SQL migrations and repeatable scripts.
+## 3) Request plane (foreground): user question → answer
 
-3. **AI orchestration layer**
-   - User intent is interpreted and mapped to relevant entities.
-   - The model receives structured, DB-backed context (not just raw prompt text).
-   - Guardrails/constraints are applied to improve consistency.
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant UI as User Interface (React)
+  participant API as Next.js API routes
+  participant DB as Database
+  participant LLM as LLM API
 
-4. **User interface**
-   - Next.js route handlers expose data and AI-assisted endpoints.
-   - UI components consume these routes for interactive product features.
+  U->>UI: question / action
+  UI->>API: HTTP request
+  API->>API: intent / routing (optional)
+  API->>DB: query fixtures, stats, odds context
+  DB-->>API: rows
+  API->>API: assemble structured context + rules
+  API->>LLM: generate with grounded context
+  LLM-->>API: text / structured fragment
+  API-->>UI: JSON / streamed response
+  UI-->>U: rendered answer
+```
 
-## Why this architecture
+This is the **missing link** many “AI demos” skip: **User → UI → API → DB → AI → UI → User**.
 
-- Improves reliability versus direct model-only answers
-- Reduces coupling to external API latency at user-request time
-- Allows data validation and operational monitoring between ingestion and generation
-- Supports iterative improvement of both data and AI behaviors
+---
 
-## API surface (categories, not exhaustive)
+## 4) Why this architecture
 
-The main codebase exposes many HTTP routes; groupings include:
+| Goal | How |
+|------|-----|
+| Factual consistency | DB-first context for domain facts |
+| Low latency UX | Read from DB, not external API per click for bulk data |
+| Safe iteration | Change schema + sync + prompts together |
+| Operations | Debug routes and sync state help trace “bad answer” vs “bad data” |
 
-- **Data and sync:** ingestion triggers, fixture/odds-related reads, operational refresh
-- **Assistant:** chat and related endpoints that assemble DB-backed context
-- **User product:** preferences, saved items, personalized feeds (high level)
-- **Admin / debug:** internal diagnostics and maintenance paths (server-side only)
+---
 
-Exact paths and handlers are not listed here to keep this documentation lightweight and IP-safe.
+## 5) API surface (categories only)
+
+Routes are grouped by concern: **sync/ingestion**, **assistant/chat**, **user features**, **admin/debug**. Exact paths are omitted in this public doc.
+
+---
+
+## Next pages
+
+- [`01-sport-api-and-sync.md`](01-sport-api-and-sync.md) — Sport API ↔ Database in detail  
+- [`02-database.md`](02-database.md) — Database role  
+- [`03-ai-layer.md`](03-ai-layer.md) — Database ↔ AI ↔ API  
+- [`04-frontend.md`](04-frontend.md) — UI ↔ User ↔ API  
