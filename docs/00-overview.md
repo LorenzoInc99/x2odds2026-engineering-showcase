@@ -1,90 +1,65 @@
 # Overview: Sport API ↔ Database ↔ AI ↔ User Interface ↔ User
 
-This page is the **single picture** of the system: two flows — **data** (keeping the DB fresh) and **interactive** (user asks, system answers using the DB + AI).
+This page complements **[`06-end-to-end-process.md`](06-end-to-end-process.md)** with diagrams. The **canonical** text for the five-part chain is in doc **06**.
 
 ---
 
-## 1) The full loop (conceptual)
+## 1) The chain (same as README)
 
 ```
-  Sport API          Database           AI              User Interface        User
- (external)      (PostgreSQL/Supabase)  (LLM + logic)      (Next.js / React)
-      │                  │                │                      │                │
-      │◀──── sync ──────▶│◀── context ───▶│◀── orchestration ───▶│◀── browse / ask ───▶│
-      │      jobs        │    reads       │    server-side       │    HTTP/JSON      │
-      │                  │                │                      │                │
-      │                  │                │                      │──── responses ───┘
-      │                  │                │                      │
-      └──────────────────┴────────────────┴──────────────────────┘
+Sport API  ↔  Database  ↔  AI  ↔  User Interface  ↔  User
 ```
 
-- **Sport API ↔ Database:** pull data in, normalize, store. **Bidirectional** in the sense that sync runs repeatedly; the DB is updated as the API’s view of the world changes.
-- **Database ↔ AI:** the model step **reads** from the DB (and optionally joins multiple tables) to build **grounded** context; nothing here replaces your DB with “model memory” for factual domains.
-- **AI ↔ User Interface:** the UI does **not** call the LLM vendor directly. It calls **your** backend routes, which orchestrate DB + LLM and return text/JSON to the UI.
-- **User Interface ↔ User:** the user only sees the product shell and responses; **no** raw API keys or internal prompts in the browser.
+- **Sport API:** external REST data source.  
+- **Database:** PostgreSQL / Supabase — internal source of truth for app reads.  
+- **AI:** server-side orchestration + LLM calls.  
+- **User Interface:** Next.js + React.  
+- **User:** human operator in the browser.
 
 ---
 
-## 2) Data plane (background): keeping the database fresh
+## 2) Data plane (Path A): refresh the database
 
 ```mermaid
 flowchart LR
-  S[Sport API] -->|REST fetch| J[Sync / cron jobs]
-  J -->|upsert| DB[(PostgreSQL)]
-  J -->|run metadata| DB
+  S[Sport API] -->|sync jobs| DB[(Database)]
 ```
 
-- Runs on a **schedule** or **admin-triggered** paths (not per user click for bulk data).
-- Goal: **stale data** is detected and fixed via **operations**, not by asking the model to guess.
+- Runs on a schedule or admin trigger.  
+- Goal: tables stay current for the interactive path.
 
 ---
 
-## 3) Request plane (foreground): user question → answer
+## 3) Interactive plane (Path B): User ↔ … ↔ answer
 
 ```mermaid
 sequenceDiagram
-  participant U as User
-  participant UI as User Interface (React)
+  participant User
+  participant UI as User Interface
   participant API as Next.js API routes
   participant DB as Database
-  participant LLM as LLM API
+  participant LLM as AI / LLM
 
-  U->>UI: question / action
-  UI->>API: HTTP request
-  API->>API: intent / routing (optional)
-  API->>DB: query fixtures, stats, odds context
+  User->>UI: input
+  UI->>API: HTTP
+  API->>DB: read / build context
   DB-->>API: rows
-  API->>API: assemble structured context + rules
-  API->>LLM: generate with grounded context
-  LLM-->>API: text / structured fragment
-  API-->>UI: JSON / streamed response
-  UI-->>U: rendered answer
+  API->>LLM: grounded generation
+  LLM-->>API: output
+  API-->>UI: response
+  UI-->>User: display
 ```
 
-This is the **missing link** many “AI demos” skip: **User → UI → API → DB → AI → UI → User**.
+---
+
+## 4) API surface (categories)
+
+The private app exposes many routes; groups include **sync/ingestion**, **assistant/chat**, **user features**, **admin/debug**. Exact paths are omitted in this public documentation.
 
 ---
 
-## 4) Why this architecture
+## Next
 
-| Goal | How |
-|------|-----|
-| Factual consistency | DB-first context for domain facts |
-| Low latency UX | Read from DB, not external API per click for bulk data |
-| Safe iteration | Change schema + sync + prompts together |
-| Operations | Debug routes and sync state help trace “bad answer” vs “bad data” |
-
----
-
-## 5) API surface (categories only)
-
-Routes are grouped by concern: **sync/ingestion**, **assistant/chat**, **user features**, **admin/debug**. Exact paths are omitted in this public doc.
-
----
-
-## Next pages
-
-- [`01-sport-api-and-sync.md`](01-sport-api-and-sync.md) — Sport API ↔ Database in detail  
-- [`02-database.md`](02-database.md) — Database role  
-- [`03-ai-layer.md`](03-ai-layer.md) — Database ↔ AI ↔ API  
-- [`04-frontend.md`](04-frontend.md) — UI ↔ User ↔ API  
+- [`01-sport-api-and-sync.md`](01-sport-api-and-sync.md) — Sport API ↔ Database details  
+- [`03-ai-layer.md`](03-ai-layer.md) — Database ↔ AI details  
+- [`04-frontend.md`](04-frontend.md) — User Interface ↔ User details  

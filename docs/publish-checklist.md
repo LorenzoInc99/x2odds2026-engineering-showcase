@@ -6,7 +6,7 @@
 - [ ] No proprietary formulas/ranking logic
 - [ ] No earnings/business-sensitive metrics
 - [ ] Only high-level docs and sanitized samples
-- [ ] Final repo contains only `README.md`, `docs/`, `samples/`
+- [ ] Final repo contains only `README.md`, `docs/`, `samples/` (including `samples/README.md`)
 # Pre-publish checklist (before pushing to GitHub)
 
 - [ ] No `.env`, keys, or URLs with embedded credentials  

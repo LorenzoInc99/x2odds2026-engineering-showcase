@@ -1,65 +1,62 @@
 # X2ODDS2026 Engineering Showcase
 
-End-to-end process (what this project implements at a high level):
+## End-to-end process (as built)
+
+Single chain — **left = external data**, **right = human**:
 
 ```
-                    ┌─────────────┐
-                    │    User     │
-                    └──────┬──────┘
-                           │ questions, clicks
-                           ▼
-┌──────────┐    ┌──────────────────┐    ┌─────────────┐    ┌──────────┐
-│ Sport    │◀──▶│   Database       │◀──▶│     AI      │◀──▶│   User   │
-│ API      │    │ (PostgreSQL /    │    │ (LLM +      │    │ Interface│
-│ (REST)   │    │  Supabase)       │    │  orchestr.) │    │ (Next.js)│
-└──────────┘    └──────────────────┘    └─────────────┘    └────┬─────┘
-      │                   │                    │                 │
-      │ sync / refresh    │ read / write       │ context in      │ HTML/JSON
-      │                   │ context            │ generation      │ responses
-      └───────────────────┴────────────────────┴─────────────────┘
+┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌──────────────────┐   ┌─────────────┐
+│  Sport API  │◀─▶│  Database   │◀─▶│     AI      │◀─▶│  User Interface  │◀─▶│    User     │
+│   (REST)    │   │ PostgreSQL  │   │ LLM + server│   │ Next.js + React│   │  (human)    │
+│             │   │ / Supabase  │   │ orchestration│  │ pages, chat UI │   │             │
+└─────────────┘   └─────────────┘   └─────────────┘   └──────────────────┘   └─────────────┘
 ```
 
-**How to read it**
+**How each link works (short)**
 
-- **Sport API ↔ Database:** scheduled and on-demand jobs pull **external sports data** and **upsert** into your tables (fixtures, odds, stats context, etc.). The DB is the **internal source of truth** for the app.
-- **Database ↔ AI:** before answering, the backend **loads structured rows** from the DB and builds **context blocks** for the model. The LLM is **not** asked to invent facts that exist in your data.
-- **AI ↔ User Interface:** the UI calls **your** API routes; those routes run the orchestration (intent → DB → LLM → response). **Secrets and providers stay on the server.**
-- **User Interface ↔ User:** the user sees pages, chat, and controls; they interact with **React** and the same **HTTP API** surface.
+| Link | What happens |
+|------|----------------|
+| **Sport API ↔ Database** | Sync jobs fetch sports data and **upsert** into your tables. The DB is your **internal source of truth** for fixtures/odds/stats used in the app. |
+| **Database ↔ AI** | Route handlers **query** Postgres, build **structured context**, then call the LLM. Facts in the DB are preferred over model “memory” for domain data. |
+| **AI ↔ User Interface** | The browser talks only to **your** Next.js API routes. **No** API keys or full prompts in the client — orchestration stays server-side. |
+| **User Interface ↔ User** | User asks / clicks; UI shows responses, boards, chat, etc. |
 
-**What this repo contains:** documentation and sanitized samples only — not the full runnable app, `.env`, or proprietary prompts.
+**Two real traffic paths (same boxes, different direction):**
+
+1. **Background (keep DB fresh):** Sport API → sync → **Database** (repeats on a schedule or when triggered).  
+2. **Foreground (answer a user):** **User** → UI → API → read **Database** + call **AI** → response back to UI → **User**.
+
+This repo is **documentation + sanitized samples only** — not the full private app, not `.env`, not secrets, not full prompts.
 
 ---
 
-## Quick links
+## Read next
 
-| Doc | Content |
+| Doc | Purpose |
 |-----|---------|
-| **[`docs/00-overview.md`](docs/00-overview.md)** | **Full process diagram** (including User) + request sequence |
-| [`docs/INDEX.md`](docs/INDEX.md) | Table of contents for all docs |
-| [`docs/03-ai-layer.md`](docs/03-ai-layer.md) | LLM + database grounding |
-| [`samples/`](samples/) | Sanitized code patterns |
+| [`docs/06-end-to-end-process.md`](docs/06-end-to-end-process.md) | Same chain, diagrams, and the two paths (sync vs interactive) |
+| [`docs/00-overview.md`](docs/00-overview.md) | Mermaid sequence: User → UI → API → DB → LLM |
+| [`docs/INDEX.md`](docs/INDEX.md) | Full table of contents |
+| [`docs/tech-stack.md`](docs/tech-stack.md) | Dependencies and tooling (from `package.json`, no secrets) |
+| [`docs/07-private-repo-map.md`](docs/07-private-repo-map.md) | What exists in the full project **at folder level** (still no env) |
+| [`samples/README.md`](samples/README.md) | What each sample file illustrates |
 
 ---
 
-## What this demonstrates
+## Numbers (order of magnitude, non-sensitive)
 
-- **Ingestion:** Sport API → sync → PostgreSQL
-- **Data engineering:** migrations, operational tables
-- **AI engineering:** DB-grounded orchestration, constraints
-- **Product:** Next.js API routes + React UI (~77 route handlers in the main project branch)
+- **~77** Next.js API route handlers in the main application branch  
+- **~20** SQL migration files  
+- Local development; deployment is separate from this showcase  
 
-## Stack
+## Stack (summary)
 
-TypeScript · Next.js · React · PostgreSQL/Supabase · REST · LLM API (`@google/genai`)
-
-## Scope (order of magnitude)
-
-~77 API route handlers · ~20 SQL migration files · local-first
+TypeScript · Next.js 14 · React · PostgreSQL/Supabase · REST · `@google/genai` · Tailwind · ESLint  
 
 ## Author
 
-Solo engineering ownership of backend/API, data layer, AI integration, and UI wiring.
+Solo engineering ownership: API, data layer, AI integration, UI wiring.
 
 ## Use
 
-Professional review (recruiting, interviews). `samples/` are illustrative, not production drop-ins.
+For hiring / interviews. `samples/` are patterns only, not runnable production code.
